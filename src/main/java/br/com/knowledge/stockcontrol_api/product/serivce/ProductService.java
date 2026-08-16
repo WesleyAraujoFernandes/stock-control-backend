@@ -79,6 +79,14 @@ public class ProductService {
         return toResponse(updatedProduct);
     }
 
+    @Transactional
+    public void delete(UUID id) {
+        if (!repository.existsById(id)) {
+            throw new ProductNotFoundException(id);
+        }
+        repository.deleteById(id);
+    }
+
     private ProductResponse toResponse(ProductEntity product) {
         return new ProductResponse(
                 product.getId(),
