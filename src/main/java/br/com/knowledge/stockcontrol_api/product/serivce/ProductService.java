@@ -80,6 +80,17 @@ public class ProductService {
     }
 
     @Transactional
+    public ProductResponse toggleActive(UUID id) {
+        ProductEntity product = repository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        product.setActive(!product.getActive());
+        product.setUpdatedAt(LocalDateTime.now());
+
+        ProductEntity updateProduct = repository.save(product);
+        return toResponse(updateProduct);
+    }
+
+    @Transactional
     public void delete(UUID id) {
         if (!repository.existsById(id)) {
             throw new ProductNotFoundException(id);
