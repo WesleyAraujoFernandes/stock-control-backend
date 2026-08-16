@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.knowledge.stockcontrol_api.product.dto.CreateProductRequest;
 import br.com.knowledge.stockcontrol_api.product.dto.ProductResponse;
 import br.com.knowledge.stockcontrol_api.product.entity.ProductEntity;
+import br.com.knowledge.stockcontrol_api.product.exception.ProductNotFoundException;
+import br.com.knowledge.stockcontrol_api.product.exception.ProductSkuAlreadyExistsException;
 import br.com.knowledge.stockcontrol_api.product.repository.ProductRepository;
 
 @Service
@@ -23,7 +25,7 @@ public class ProductService {
     @Transactional
     public ProductResponse create(CreateProductRequest request) {
         if (repository.existsBySku(request.sku())) {
-            throw new IllegalArgumentException("Já existe um produto cadastrado com o sku:" + request.sku());
+            throw new ProductSkuAlreadyExistsException(request.sku());
         }
         LocalDateTime now = LocalDateTime.now();
 
@@ -53,7 +55,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductResponse findById(UUID id) {
         return repository.findById(id).map(this::toResponse)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado:" + id));
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     private ProductResponse toResponse(ProductEntity product) {
