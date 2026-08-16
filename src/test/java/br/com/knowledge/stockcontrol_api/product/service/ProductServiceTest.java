@@ -159,4 +159,84 @@ class ProductServiceTest {
                 verify(repository).existsById(id);
                 verify(repository, never()).deleteById(any(UUID.class));
         }
+
+        @Test
+        void shouldToggleProductActiveStatus() {
+
+                UUID id = UUID.randomUUID();
+
+                LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
+                LocalDateTime updatedAt = LocalDateTime.now().minusHours(1);
+
+                ProductEntity product = new ProductEntity(
+                                id,
+                                "Notebook",
+                                "NB001",
+                                "Informática",
+                                10,
+                                5,
+                                new BigDecimal("4200.00"),
+                                true,
+                                createdAt,
+                                updatedAt);
+
+                when(repository.findById(id))
+                                .thenReturn(Optional.of(product));
+
+                when(repository.save(any(ProductEntity.class)))
+                                .thenAnswer(invocation -> invocation.getArgument(0));
+
+                ProductResponse response = service.toggleActive(id);
+
+                assertThat(response.active()).isFalse();
+                assertThat(response.createdAt()).isEqualTo(createdAt);
+                assertThat(response.updatedAt()).isAfter(updatedAt);
+
+                verify(repository).findById(id);
+                verify(repository).save(product);
+        }
+
+        @Test
+        void shouldActivateInactiveProduct() {
+
+                UUID id = UUID.randomUUID();
+
+                ProductEntity product = new ProductEntity(
+                                id,
+                                "Mouse",
+                                "MS001",
+                                "Informática",
+                                20,
+                                5,
+                                new BigDecimal("89.00"),
+                                false,
+                                LocalDateTime.now().minusDays(1),
+                                LocalDateTime.now().minusHours(1));
+
+                when(repository.findById(id))
+                                .thenReturn(Optional.of(product));
+
+                when(repository.save(any(ProductEntity.class)))
+                                .thenAnswer(invocation -> invocation.getArgument(0));
+
+                ProductResponse response = service.toggleActive(id);
+
+                assertThat(response.active()).isTrue();
+
+                verify(repository).save(product);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenTogglingNonExistingProduct() {
+
+                UUID id = UUID.randomUUID();
+
+                when(repository.findById(id))
+                                .thenReturn(Optional.empty());
+
+                assertThatThrownBy(() -> service.toggleActive(id))
+                                .isInstanceOf(ProductNotFoundException.class);
+
+                verify(repository, never()).save(any(ProductEntity.class));
+        }
 }
