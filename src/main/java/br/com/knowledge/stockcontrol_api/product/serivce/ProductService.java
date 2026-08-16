@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.knowledge.stockcontrol_api.product.dto.CreateProductRequest;
 import br.com.knowledge.stockcontrol_api.product.dto.ProductResponse;
+import br.com.knowledge.stockcontrol_api.product.dto.UpdateProductRequest;
 import br.com.knowledge.stockcontrol_api.product.entity.ProductEntity;
 import br.com.knowledge.stockcontrol_api.product.exception.ProductNotFoundException;
 import br.com.knowledge.stockcontrol_api.product.exception.ProductSkuAlreadyExistsException;
@@ -56,6 +57,26 @@ public class ProductService {
     public ProductResponse findById(UUID id) {
         return repository.findById(id).map(this::toResponse)
                 .orElseThrow(() -> new ProductNotFoundException(id));
+    }
+
+    @Transactional
+    public ProductResponse update(UUID id, UpdateProductRequest request) {
+        ProductEntity product = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+        if (repository.existsBySku(request.sku())
+                && !product.getSku().equals(request.sku())) {
+            throw new ProductSkuAlreadyExistsException(request.sku());
+        }
+
+        product.setName(request.name());
+        product.setSku(request.sku());
+        product.setCategory(request.category());
+        product.setQuantity(request.quantity());
+        product.setMinimumStock(request.minimumStock());
+        product.setUnitPrice(request.unitPrice());
+        product.setUpdatedAt(LocalDateTime.now());
+
+        ProductEntity updatedProduct = repository.save(product);
+        return toResponse(updatedProduct);
     }
 
     private ProductResponse toResponse(ProductEntity product) {

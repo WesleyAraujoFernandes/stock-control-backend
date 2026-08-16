@@ -8,12 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.knowledge.stockcontrol_api.product.dto.CreateProductRequest;
 import br.com.knowledge.stockcontrol_api.product.dto.ProductResponse;
+import br.com.knowledge.stockcontrol_api.product.dto.UpdateProductRequest;
 import br.com.knowledge.stockcontrol_api.product.serivce.ProductService;
 import jakarta.validation.Valid;
 
@@ -40,5 +42,11 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.findById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponse> update(@PathVariable UUID id,
+            @Valid @RequestBody UpdateProductRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 }
