@@ -141,4 +141,22 @@ class ProductServiceTest {
                 assertThatThrownBy(() -> service.update(id, request)).isInstanceOf(ProductNotFoundException.class);
                 verify(repository, never()).save(any(ProductEntity.class));
         }
+
+        @Test
+        void shouldDeleteProduct() {
+                UUID id = UUID.randomUUID();
+                when(repository.existsById(id)).thenReturn(true);
+                service.delete(id);
+                verify(repository).existsById(id);
+                verify(repository).deleteById(id);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenDeletingNonExistingProduct() {
+                UUID id = UUID.randomUUID();
+                when(repository.existsById(id)).thenReturn(false);
+                assertThatThrownBy(() -> service.delete(id)).isInstanceOf(ProductNotFoundException.class);
+                verify(repository).existsById(id);
+                verify(repository, never()).deleteById(any(UUID.class));
+        }
 }
