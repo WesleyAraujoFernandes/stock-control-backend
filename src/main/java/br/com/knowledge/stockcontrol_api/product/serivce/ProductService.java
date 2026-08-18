@@ -26,7 +26,7 @@ public class ProductService {
     @Transactional
     public ProductResponse create(CreateProductRequest request) {
         if (repository.existsBySku(request.sku())) {
-            throw new ProductSkuAlreadyExistsException(request.sku());
+            throw new ProductSkuAlreadyExistsException("Já existe um produto cadastrado com o SKU informado:" + request.sku());
         }
         LocalDateTime now = LocalDateTime.now();
 
@@ -64,7 +64,7 @@ public class ProductService {
         ProductEntity product = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
         if (repository.existsBySku(request.sku())
                 && !product.getSku().equals(request.sku())) {
-            throw new ProductSkuAlreadyExistsException(request.sku());
+            throw new ProductSkuAlreadyExistsException("Já existe um produto com o SKU informado:" + request.sku());
         }
 
         product.setName(request.name());
